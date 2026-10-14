@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Paperless REST server",
+      "request": "launch",
+      "mainClass": "at.technikum.swen3.paperless.PaperlessApplication",
+      "projectName": "paperless"
+    }
+  ]
+}
