@@ -77,6 +77,19 @@ class DocumentServiceImplTest {
     }
 
     @Test
+    void updateWithoutCategoryRemovesExistingCategory() {
+        Document document = new Document("Old", "old.pdf", "application/pdf", new Category("Old category"));
+        when(documentRepository.findById(1L)).thenReturn(Optional.of(document));
+
+        DocumentResponse response = service.update(1L,
+                new DocumentRequest("New", "new.pdf", "application/pdf", null));
+
+        assertEquals("New", response.title());
+        assertNull(response.categoryId());
+        assertNull(response.categoryName());
+    }
+
+    @Test
     void deleteUsesRepository() {
         Document document = new Document("Invoice", "invoice.pdf", "application/pdf", null);
         when(documentRepository.findById(1L)).thenReturn(Optional.of(document));
