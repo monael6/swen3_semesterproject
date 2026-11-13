@@ -31,9 +31,9 @@ Manual browser check:
 
 ## Team workflow
 
-- [ ] one assigned issue per team member
-- [ ] one feature branch and meaningful commit per team member
-- [ ] one pull request to `develop` per team member
-- [ ] all three pull requests merged to `develop`
-- [ ] final pull request from `develop` to `main`
-- [ ] final ZIP created from `main`
+- [x] one assigned issue per team member
+- [x] one feature branch and meaningful commit per team member
+- [x] one pull request to `develop` per team member
+- [x] all three pull requests merged to `develop`
+- [x] final pull request from `develop` to `main`
+- [x] final ZIP created from `main`
