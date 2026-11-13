@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paperless Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="/">Paperless</a>
+    <span class="subtitle">Dokumentenverwaltung</span>
+</header>
+
+<main class="page">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">Sprint 2</p>
+            <h1>Dokumenten-Dashboard</h1>
+            <p>Dokumentmetadaten und Kategorien an einem Ort verwalten.</p>
+        </div>
+        <button id="refresh-button" class="button secondary" type="button">Aktualisieren</button>
+    </section>
+
+    <div id="page-message" class="message hidden" role="status"></div>
+
+    <section class="stats" aria-label="Übersicht">
+        <article class="stat-card">
+            <span>Dokumente</span>
+            <strong id="document-count">–</strong>
+        </article>
+        <article class="stat-card">
+            <span>Kategorien</span>
+            <strong id="category-count">–</strong>
+        </article>
+    </section>
+
+    <section class="content-grid">
+        <article class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Bestand</p>
+                    <h2>Dokumente</h2>
+                </div>
+            </div>
+            <div id="document-list" class="document-list">
+                <p class="empty-state">Dokumente werden geladen …</p>
+            </div>
+        </article>
+
+        <aside class="forms">
+            <article class="panel">
+                <p class="eyebrow">Neu</p>
+                <h2>Dokument anlegen</h2>
+                <form id="document-form" novalidate>
+                    <label for="title">Titel</label>
+                    <input id="title" name="title" maxlength="200" required>
+                    <small class="field-error" id="title-error"></small>
+
+                    <label for="fileName">Dateiname</label>
+                    <input id="fileName" name="fileName" maxlength="255" placeholder="beispiel.pdf" required>
+                    <small class="field-error" id="fileName-error"></small>
+
+                    <label for="contentType">Content-Type</label>
+                    <select id="contentType" name="contentType" required>
+                        <option value="application/pdf">application/pdf</option>
+                        <option value="image/png">image/png</option>
+                        <option value="image/jpeg">image/jpeg</option>
+                        <option value="text/plain">text/plain</option>
+                    </select>
+
+                    <label for="categoryId">Kategorie</label>
+                    <select id="categoryId" name="categoryId">
+                        <option value="">Keine Kategorie</option>
+                    </select>
+
+                    <button class="button" type="submit">Dokument speichern</button>
+                </form>
+            </article>
+
+            <article class="panel compact-panel">
+                <p class="eyebrow">Optional</p>
+                <h2>Kategorie anlegen</h2>
+                <form id="category-form" novalidate>
+                    <label for="categoryName">Name</label>
+                    <input id="categoryName" name="name" maxlength="80" required>
+                    <small class="field-error" id="categoryName-error"></small>
+                    <button class="button secondary" type="submit">Kategorie speichern</button>
+                </form>
+            </article>
+        </aside>
+    </section>
+</main>
+
+<script type="module" src="dashboard.js"></script>
+</body>
+</html>

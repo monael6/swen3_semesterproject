@@ -1,6 +1,6 @@
-# Paperless DMS - SWEN3 Sprint 1
+# Paperless DMS - SWEN3 Sprint 2
 
-Minimal document-management REST API implementing the Sprint 1 requirements.
+Minimal document-management application implementing the Sprint 1 and Sprint 2 requirements.
 
 ## Implemented
 
@@ -13,9 +13,13 @@ Minimal document-management REST API implementing the Sprint 1 requirements.
 - validation, logging and basic exception handling
 - unit tests with mocked repositories and JaCoCo coverage
 - Docker Compose for API and PostgreSQL
+- responsive web UI served by nginx
+- dashboard, document details and validated forms
+- same-origin communication from nginx to the REST API
+- Docker Compose frontend container on port 80
 - GitHub Actions CI
 
-Actual PDF bytes, OCR, queues, MinIO, Elasticsearch, GenAI and the web UI are added in later sprints. Sprint 1 stores document metadata.
+Actual PDF bytes, OCR, queues, MinIO, Elasticsearch and GenAI are added in later sprints. Sprint 2 manages document metadata through the web UI.
 
 ## Start
 
@@ -23,7 +27,27 @@ Actual PDF bytes, OCR, queues, MinIO, Elasticsearch, GenAI and the web UI are ad
 docker compose up --build
 ```
 
-API: `http://localhost:8080`
+Frontend: `http://localhost/`
+
+API (direct access): `http://localhost:8080`
+
+The nginx frontend forwards browser requests from `/api/...` to the API container. No separate frontend development server is required.
+
+## Web UI
+
+- Dashboard with document and category counts
+- document list with links to detail pages
+- form for creating document metadata
+- form for creating categories
+- client-side required-field and file-name validation
+- server error messages displayed in the page
+
+Quick check:
+
+1. Open `http://localhost/`.
+2. Create a category.
+3. Create a document and select the category.
+4. Open the document from the list to view its detail page.
 
 ## Test
 
@@ -136,13 +160,16 @@ returned instead (`"error": "Bad Request"`, no `validationErrors`).
 
 ```mermaid
 flowchart LR
-    Client --> Controller
+    Browser --> Nginx[nginx frontend]
+    Nginx --> Controller
     Controller --> Service[Service interface]
     Service --> ServiceImpl[Business logic]
     ServiceImpl --> Mapper[MapStruct]
     ServiceImpl --> Repository[JPA repository]
     Repository --> PostgreSQL
 ```
+
+nginx serves the static HTML, CSS and JavaScript and proxies `/api` requests to Spring Boot. The browser therefore uses one origin at `http://localhost/`.
 
 Constructor injection and the `DocumentService` interface keep components loosely coupled. Unit tests mock the repositories, so they do not use the production database.
 
