@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dokumentdetails – Paperless</title>
+    <link rel="stylesheet" href="vendor/bootstrap.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<header class="topbar">
-    <a class="brand" href="/">Paperless</a>
-    <span class="subtitle">Dokumentenverwaltung</span>
-</header>
+<body class="bg-body-tertiary">
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">Paperless</a>
+        <span class="navbar-text">Dokumentenverwaltung</span>
+    </div>
+</nav>
 
-<main class="page narrow-page">
-    <a class="back-link" href="/">← Zurück zum Dashboard</a>
-    <section id="document-detail" class="panel detail-panel">
-        <p class="empty-state">Dokument wird geladen …</p>
+<main class="container py-4 py-md-5" style="max-width: 760px">
+    <a class="link-secondary d-inline-block mb-3" href="/">← Zurück zum Dashboard</a>
+    <section id="document-detail" class="card shadow-sm card-body">
+        <p class="text-body-secondary mb-0">Dokument wird geladen …</p>
     </section>
 </main>
 

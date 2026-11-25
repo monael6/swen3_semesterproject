@@ -13,7 +13,7 @@ Minimal document-management application implementing the Sprint 1 and Sprint 2 r
 - validation, logging and basic exception handling
 - unit tests with mocked repositories and JaCoCo coverage
 - Docker Compose for API and PostgreSQL (`docker-compose.yaml`)
-- responsive web UI served by nginx
+- responsive web UI with Bootstrap 5, served by nginx
 - dashboard, document details and validated forms
 - PDF upload from the web UI to the REST API (`multipart/form-data`)
 - same-origin communication from nginx to the REST API
@@ -29,7 +29,7 @@ metadata (file name, type, size) is stored; storing the file content itself foll
 .
 ├── docker-compose.yaml     # starts database, REST API and web UI
 ├── paperless-rest/         # Spring Boot REST API (Maven project, Dockerfile)
-├── paperless-webui/        # nginx + static web UI (HTML, CSS, JavaScript)
+├── paperless-webui/        # nginx + static web UI (HTML, Bootstrap 5, JavaScript)
 └── docs/                   # sprint checklists
 ```
 

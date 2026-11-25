@@ -30,25 +30,25 @@ async function loadDocument() {
     const id = new URLSearchParams(window.location.search).get("id");
 
     if (!id || !/^\d+$/.test(id)) {
-        detail.innerHTML = '<div class="message error">Ungültige Dokument-ID.</div>';
+        detail.innerHTML = '<div class="alert alert-danger mb-0">Ungültige Dokument-ID.</div>';
         return;
     }
 
     try {
         const documentData = await api.getDocument(id);
         detail.innerHTML = `
-            <p class="eyebrow">Dokument #${documentData.id}</p>
-            <h1>${escapeHtml(documentData.title)}</h1>
-            <dl class="detail-grid">
-                <div><dt>Dateiname</dt><dd>${escapeHtml(documentData.fileName)}</dd></div>
-                <div><dt>Content-Type</dt><dd>${escapeHtml(documentData.contentType)}</dd></div>
-                <div><dt>Größe</dt><dd>${escapeHtml(formatSize(documentData.fileSize))}</dd></div>
-                <div><dt>Kategorie</dt><dd>${escapeHtml(documentData.categoryName || "Ohne Kategorie")}</dd></div>
-                <div><dt>Erstellt</dt><dd>${escapeHtml(formatDate(documentData.createdAt))}</dd></div>
+            <p class="text-primary text-uppercase fw-bold small mb-1">Dokument #${documentData.id}</p>
+            <h1 class="h2 fw-bold mb-4">${escapeHtml(documentData.title)}</h1>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Dateiname</dt><dd class="col-sm-8">${escapeHtml(documentData.fileName)}</dd>
+                <dt class="col-sm-4">Content-Type</dt><dd class="col-sm-8">${escapeHtml(documentData.contentType)}</dd>
+                <dt class="col-sm-4">Größe</dt><dd class="col-sm-8">${escapeHtml(formatSize(documentData.fileSize))}</dd>
+                <dt class="col-sm-4">Kategorie</dt><dd class="col-sm-8">${escapeHtml(documentData.categoryName || "Ohne Kategorie")}</dd>
+                <dt class="col-sm-4">Erstellt</dt><dd class="col-sm-8 mb-0">${escapeHtml(formatDate(documentData.createdAt))}</dd>
             </dl>
         `;
     } catch (error) {
-        detail.innerHTML = `<div class="message error">Dokument konnte nicht geladen werden: ${escapeHtml(error.message)}</div>`;
+        detail.innerHTML = `<div class="alert alert-danger mb-0">Dokument konnte nicht geladen werden: ${escapeHtml(error.message)}</div>`;
     }
 }
 

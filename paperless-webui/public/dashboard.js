@@ -11,11 +11,11 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // must match spring.servlet.multipart.m
 
 function showMessage(text, type = "success") {
     message.textContent = text;
-    message.className = `message ${type}`;
+    message.className = `alert ${type === "error" ? "alert-danger" : "alert-success"}`;
 }
 
 function clearMessage() {
-    message.className = "message hidden";
+    message.className = "alert d-none";
 }
 
 function escapeHtml(value) {
@@ -31,19 +31,22 @@ function renderDocuments(documents) {
     documentCount.textContent = documents.length;
 
     if (documents.length === 0) {
-        documentList.innerHTML = '<p class="empty-state">Noch keine Dokumente vorhanden.</p>';
+        documentList.innerHTML = '<p class="text-body-secondary p-3 mb-0">Noch keine Dokumente vorhanden.</p>';
         return;
     }
 
     documentList.innerHTML = documents.map((document) => `
-        <a class="document-row" href="document.html?id=${document.id}">
-            <span class="file-icon">${document.contentType === "application/pdf" ? "PDF" : "FILE"}</span>
-            <span class="document-info">
-                <strong>${escapeHtml(document.title)}</strong>
-                <small>${escapeHtml(document.fileName)}</small>
+        <a class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3"
+           href="document.html?id=${document.id}">
+            <span class="file-icon rounded bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center">
+                ${document.contentType === "application/pdf" ? "PDF" : "FILE"}
             </span>
-            <span class="category-badge">${escapeHtml(document.categoryName || "Ohne Kategorie")}</span>
-            <span class="row-arrow" aria-hidden="true">›</span>
+            <span class="flex-grow-1 text-truncate">
+                <strong class="d-block text-truncate">${escapeHtml(document.title)}</strong>
+                <small class="text-body-secondary">${escapeHtml(document.fileName)}</small>
+            </span>
+            <span class="badge rounded-pill text-bg-light border">${escapeHtml(document.categoryName || "Ohne Kategorie")}</span>
+            <span class="text-body-secondary" aria-hidden="true">›</span>
         </a>
     `).join("");
 }
@@ -66,12 +69,14 @@ async function loadDashboard() {
         renderCategories(categories);
     } catch (error) {
         showMessage(`Daten konnten nicht geladen werden: ${error.message}`, "error");
-        documentList.innerHTML = '<p class="empty-state">Keine Verbindung zum Server.</p>';
+        documentList.innerHTML = '<p class="text-body-secondary p-3 mb-0">Keine Verbindung zum Server.</p>';
     }
 }
 
+// Shows the message under the field and marks the field red (Bootstrap "is-invalid").
 function setFieldError(fieldId, text) {
     document.querySelector(`#${fieldId}-error`).textContent = text;
+    document.querySelector(`#${fieldId}`).classList.toggle("is-invalid", Boolean(text));
 }
 
 function validateDocument(title, file) {

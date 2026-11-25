@@ -4,84 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paperless Dashboard</title>
+    <!-- Bootstrap 5.3.3, bundled locally so the UI also works without internet -->
+    <link rel="stylesheet" href="vendor/bootstrap.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<header class="topbar">
-    <a class="brand" href="/">Paperless</a>
-    <span class="subtitle">Dokumentenverwaltung</span>
-</header>
+<body class="bg-body-tertiary">
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">Paperless</a>
+        <span class="navbar-text">Dokumentenverwaltung</span>
+    </div>
+</nav>
 
-<main class="page">
-    <section class="hero">
+<main class="container py-4 py-md-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <p class="eyebrow">Sprint 2</p>
-            <h1>Dokumenten-Dashboard</h1>
-            <p>PDF-Dokumente hochladen und mit Kategorien verwalten.</p>
+            <p class="text-primary text-uppercase fw-bold small mb-1">Dashboard</p>
+            <h1 class="fw-bold mb-1">Dokumenten-Dashboard</h1>
+            <p class="text-body-secondary mb-0">PDF-Dokumente hochladen und mit Kategorien verwalten.</p>
         </div>
-        <button id="refresh-button" class="button secondary" type="button">Aktualisieren</button>
-    </section>
+        <button id="refresh-button" class="btn btn-outline-primary" type="button">Aktualisieren</button>
+    </div>
 
-    <div id="page-message" class="message hidden" role="status"></div>
+    <div id="page-message" class="alert d-none" role="status"></div>
 
-    <section class="stats" aria-label="Übersicht">
-        <article class="stat-card">
-            <span>Dokumente</span>
-            <strong id="document-count">–</strong>
-        </article>
-        <article class="stat-card">
-            <span>Kategorien</span>
-            <strong id="category-count">–</strong>
-        </article>
-    </section>
-
-    <section class="content-grid">
-        <article class="panel">
-            <div class="panel-heading">
-                <div>
-                    <p class="eyebrow">Bestand</p>
-                    <h2>Dokumente</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-body-secondary">Dokumente</div>
+                    <div id="document-count" class="display-6 fw-bold">–</div>
                 </div>
             </div>
-            <div id="document-list" class="document-list">
-                <p class="empty-state">Dokumente werden geladen …</p>
+        </div>
+        <div class="col-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-body-secondary">Kategorien</div>
+                    <div id="category-count" class="display-6 fw-bold">–</div>
+                </div>
             </div>
-        </article>
+        </div>
+    </div>
 
-        <aside class="forms">
-            <article class="panel">
-                <p class="eyebrow">Neu</p>
-                <h2>Dokument hochladen</h2>
-                <form id="document-form" novalidate>
-                    <label for="file">PDF-Datei</label>
-                    <input id="file" name="file" type="file" accept="application/pdf,.pdf" required>
-                    <small class="field-error" id="file-error"></small>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h2 class="h5 mb-0">Dokumente</h2>
+                </div>
+                <div id="document-list" class="list-group list-group-flush">
+                    <p class="text-body-secondary p-3 mb-0">Dokumente werden geladen …</p>
+                </div>
+            </div>
+        </div>
 
-                    <label for="title">Titel</label>
-                    <input id="title" name="title" maxlength="200" required>
-                    <small class="field-error" id="title-error"></small>
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Dokument hochladen</h2>
+                    <form id="document-form" novalidate>
+                        <div class="mb-3">
+                            <label for="file" class="form-label">PDF-Datei</label>
+                            <input id="file" name="file" type="file" class="form-control"
+                                   accept="application/pdf,.pdf" required>
+                            <div class="invalid-feedback" id="file-error"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Titel</label>
+                            <input id="title" name="title" class="form-control" maxlength="200" required>
+                            <div class="invalid-feedback" id="title-error"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryId" class="form-label">Kategorie</label>
+                            <select id="categoryId" name="categoryId" class="form-select">
+                                <option value="">Keine Kategorie</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Dokument hochladen</button>
+                    </form>
+                </div>
+            </div>
 
-                    <label for="categoryId">Kategorie</label>
-                    <select id="categoryId" name="categoryId">
-                        <option value="">Keine Kategorie</option>
-                    </select>
-
-                    <button class="button" type="submit">Dokument hochladen</button>
-                </form>
-            </article>
-
-            <article class="panel compact-panel">
-                <p class="eyebrow">Optional</p>
-                <h2>Kategorie anlegen</h2>
-                <form id="category-form" novalidate>
-                    <label for="categoryName">Name</label>
-                    <input id="categoryName" name="name" maxlength="80" required>
-                    <small class="field-error" id="categoryName-error"></small>
-                    <button class="button secondary" type="submit">Kategorie speichern</button>
-                </form>
-            </article>
-        </aside>
-    </section>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Kategorie anlegen</h2>
+                    <form id="category-form" novalidate>
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Name</label>
+                            <input id="categoryName" name="name" class="form-control" maxlength="80" required>
+                            <div class="invalid-feedback" id="categoryName-error"></div>
+                        </div>
+                        <button class="btn btn-outline-primary w-100" type="submit">Kategorie speichern</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
 <script type="module" src="dashboard.js"></script>
