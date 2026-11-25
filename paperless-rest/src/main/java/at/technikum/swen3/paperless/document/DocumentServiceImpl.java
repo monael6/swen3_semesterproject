@@ -2,6 +2,8 @@ package at.technikum.swen3.paperless.document;
 
 import at.technikum.swen3.paperless.category.Category;
 import at.technikum.swen3.paperless.category.CategoryRepository;
+import at.technikum.swen3.paperless.messaging.OcrJobMessage;
+import at.technikum.swen3.paperless.messaging.OcrJobPublisher;
 import at.technikum.swen3.paperless.shared.InvalidFileException;
 import at.technikum.swen3.paperless.shared.NotFoundException;
 import org.slf4j.Logger;
@@ -25,13 +27,16 @@ public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository documentRepository;
     private final CategoryRepository categoryRepository;
     private final DocumentMapper mapper;
+    private final OcrJobPublisher ocrJobPublisher;
 
     public DocumentServiceImpl(DocumentRepository documentRepository,
                                CategoryRepository categoryRepository,
-                               DocumentMapper mapper) {
+                               DocumentMapper mapper,
+                               OcrJobPublisher ocrJobPublisher) {
         this.documentRepository = documentRepository;
         this.categoryRepository = categoryRepository;
         this.mapper = mapper;
+        this.ocrJobPublisher = ocrJobPublisher;
     }
 
     @Override
@@ -42,6 +47,11 @@ public class DocumentServiceImpl implements DocumentService {
                 findCategory(request.categoryId())));
         log.info("Uploaded document id={} fileName={} size={} bytes",
                 saved.getId(), saved.getFileName(), saved.getFileSize());
+
+        // Hand the document over to the OCR worker. If RabbitMQ is down, the exception
+        // rolls back this transaction, so no document exists without an OCR job.
+        ocrJobPublisher.publish(new OcrJobMessage(saved.getId(), saved.getFileName(),
+                saved.getContentType(), saved.getFileSize(), saved.getCreatedAt()));
         return mapper.toResponse(saved);
     }
 

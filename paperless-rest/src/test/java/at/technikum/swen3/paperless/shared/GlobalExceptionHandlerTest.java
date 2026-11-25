@@ -1,5 +1,6 @@
 package at.technikum.swen3.paperless.shared;
 
+import at.technikum.swen3.paperless.messaging.QueuePublishException;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -31,6 +32,16 @@ class GlobalExceptionHandlerTest {
         ApiError error = handler.handleInvalidFile(new InvalidFileException("Only PDF files are allowed"));
         assertEquals(400, error.status());
         assertEquals("Only PDF files are allowed", error.validationErrors().get("file"));
+    }
+
+    @Test
+    void mapsConflictTo409() {
+        assertEquals(409, handler.handleConflict(new ConflictException("exists")).status());
+    }
+
+    @Test
+    void mapsQueueFailureTo503() {
+        assertEquals(503, handler.handleQueueUnavailable(new QueuePublishException("down", null)).status());
     }
 
     @SuppressWarnings("unused") private void dummy(String value) {}
