@@ -2,12 +2,16 @@ package at.technikum.swen3.paperless.document;
 
 import at.technikum.swen3.paperless.category.Category;
 import at.technikum.swen3.paperless.category.CategoryRepository;
+import at.technikum.swen3.paperless.messaging.OcrJobMessage;
+import at.technikum.swen3.paperless.messaging.OcrJobPublisher;
+import at.technikum.swen3.paperless.messaging.QueuePublishException;
 import at.technikum.swen3.paperless.shared.InvalidFileException;
 import at.technikum.swen3.paperless.shared.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
@@ -23,6 +27,7 @@ import static org.mockito.Mockito.*;
 class DocumentServiceImplTest {
     @Mock DocumentRepository documentRepository;
     @Mock CategoryRepository categoryRepository;
+    @Mock OcrJobPublisher ocrJobPublisher;
     private DocumentServiceImpl service;
 
     private static MockMultipartFile pdf(String name) {
@@ -32,7 +37,7 @@ class DocumentServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new DocumentServiceImpl(documentRepository, categoryRepository,
-                Mappers.getMapper(DocumentMapper.class));
+                Mappers.getMapper(DocumentMapper.class), ocrJobPublisher);
     }
 
     @Test
@@ -47,6 +52,27 @@ class DocumentServiceImplTest {
         assertEquals(13L, response.fileSize());
         assertEquals("Invoices", response.categoryName());
         verify(documentRepository).save(any(Document.class));
+    }
+
+    @Test
+    void uploadSendsOcrJobWithDocumentData() {
+        when(documentRepository.save(any(Document.class))).thenAnswer(call -> call.getArgument(0));
+        service.upload(new DocumentUploadRequest("Invoice", null), pdf("invoice.pdf"));
+
+        ArgumentCaptor<OcrJobMessage> message = ArgumentCaptor.forClass(OcrJobMessage.class);
+        verify(ocrJobPublisher).publish(message.capture());
+        assertEquals("invoice.pdf", message.getValue().fileName());
+        assertEquals("application/pdf", message.getValue().contentType());
+        assertEquals(13L, message.getValue().fileSize());
+        assertNotNull(message.getValue().uploadedAt());
+    }
+
+    @Test
+    void uploadFailsWhenQueueIsUnavailable() {
+        when(documentRepository.save(any(Document.class))).thenAnswer(call -> call.getArgument(0));
+        doThrow(new QueuePublishException("down", null)).when(ocrJobPublisher).publish(any());
+        assertThrows(QueuePublishException.class,
+                () -> service.upload(new DocumentUploadRequest("Invoice", null), pdf("invoice.pdf")));
     }
 
     @Test
@@ -69,7 +95,7 @@ class DocumentServiceImplTest {
         MockMultipartFile empty = new MockMultipartFile("file", "empty.pdf", "application/pdf", new byte[0]);
         assertThrows(InvalidFileException.class,
                 () -> service.upload(new DocumentUploadRequest("Empty", null), empty));
-        verifyNoInteractions(documentRepository);
+        verifyNoInteractions(documentRepository, ocrJobPublisher);
     }
 
     @Test
@@ -77,7 +103,7 @@ class DocumentServiceImplTest {
         MockMultipartFile text = new MockMultipartFile("file", "fake.pdf", "application/pdf", "hello".getBytes());
         assertThrows(InvalidFileException.class,
                 () -> service.upload(new DocumentUploadRequest("Fake", null), text));
-        verifyNoInteractions(documentRepository);
+        verifyNoInteractions(documentRepository, ocrJobPublisher);
     }
 
     @Test
