@@ -1,4 +1,4 @@
-# Paperless DMS - SWEN3 Sprint 2
+# Paperless DMS - SWEN3
 
 Minimal document-management application implementing the Sprint 1 and Sprint 2 requirements.
 
@@ -12,14 +12,26 @@ Minimal document-management application implementing the Sprint 1 and Sprint 2 r
 - PostgreSQL persistence through Spring Data JPA/Hibernate
 - validation, logging and basic exception handling
 - unit tests with mocked repositories and JaCoCo coverage
-- Docker Compose for API and PostgreSQL
-- responsive web UI served by nginx
+- Docker Compose for API and PostgreSQL (`docker-compose.yaml`)
+- responsive web UI with Bootstrap 5, served by nginx
 - dashboard, document details and validated forms
+- PDF upload from the web UI to the REST API (`multipart/form-data`)
 - same-origin communication from nginx to the REST API
 - Docker Compose frontend container on port 80
 - GitHub Actions CI
 
-Actual PDF bytes, OCR, queues, MinIO, Elasticsearch and GenAI are added in later sprints. Sprint 2 manages document metadata through the web UI.
+OCR, queues, MinIO, Elasticsearch and GenAI are added in later sprints. The uploaded PDF is checked and its
+metadata (file name, type, size) is stored; storing the file content itself follows with MinIO.
+
+## Project structure
+
+```text
+.
+├── docker-compose.yaml     # starts database, REST API and web UI
+├── paperless-rest/         # Spring Boot REST API (Maven project, Dockerfile)
+├── paperless-webui/        # nginx + static web UI (HTML, Bootstrap 5, JavaScript)
+└── docs/                   # sprint checklists
+```
 
 ## Start
 
@@ -37,25 +49,26 @@ The nginx frontend forwards browser requests from `/api/...` to the API containe
 
 - Dashboard with document and category counts
 - document list with links to detail pages
-- form for creating document metadata
+- form for uploading a PDF document (title, file, optional category)
 - form for creating categories
-- client-side required-field and file-name validation
+- client-side validation: title and file required, only `.pdf`, max. 10 MB
 - server error messages displayed in the page
 
 Quick check:
 
 1. Open `http://localhost/`.
 2. Create a category.
-3. Create a document and select the category.
+3. Upload a PDF, enter a title and select the category.
 4. Open the document from the list to view its detail page.
 
 ## Test
 
 ```bash
+cd paperless-rest
 ./mvnw clean verify
 ```
 
-Coverage report: `target/site/jacoco/index.html`
+Coverage report: `paperless-rest/target/site/jacoco/index.html`
 
 ## REST endpoints
 
@@ -63,10 +76,10 @@ Coverage report: `target/site/jacoco/index.html`
 | --- | --- | --- |
 | POST | `/api/categories` | Create category |
 | GET | `/api/categories` | List categories |
-| POST | `/api/documents` | Create document metadata |
+| POST | `/api/documents` | Upload a PDF (`multipart/form-data`: `file`, `title`, optional `categoryId`) |
 | GET | `/api/documents` | List documents |
 | GET | `/api/documents/{id}` | Read one document |
-| PUT | `/api/documents/{id}` | Update document |
+| PUT | `/api/documents/{id}` | Update document metadata (JSON) |
 | DELETE | `/api/documents/{id}` | Delete document |
 
 Example:
@@ -77,8 +90,9 @@ curl -X POST http://localhost:8080/api/categories \
   -d '{"name":"Invoices"}'
 
 curl -X POST http://localhost:8080/api/documents \
-  -H 'Content-Type: application/json' \
-  -d '{"title":"Invoice","fileName":"invoice.pdf","contentType":"application/pdf","categoryId":1}'
+  -F file=@invoice.pdf \
+  -F title=Invoice \
+  -F categoryId=1
 ```
 
 ## Validation and error responses
@@ -87,10 +101,11 @@ curl -X POST http://localhost:8080/api/documents \
 
 | Request | Field | Rule |
 | --- | --- | --- |
+| POST `/api/documents` | `file` | required, not empty, must be a PDF (starts with `%PDF-`), max. 10 MB |
 | POST/PUT `/api/documents` | `title` | required, not blank, max. 200 characters |
-| POST/PUT `/api/documents` | `fileName` | required, not blank, max. 255 characters |
-| POST/PUT `/api/documents` | `contentType` | required, not blank, max. 100 characters |
-| POST/PUT `/api/documents` | `categoryId` | optional, must be an existing category |
+| PUT `/api/documents/{id}` | `fileName` | required, not blank, max. 255 characters |
+| PUT `/api/documents/{id}` | `contentType` | required, not blank, max. 100 characters |
+| POST/PUT `/api/documents` | `categoryId` | optional, positive, must be an existing category |
 | POST `/api/categories` | `name` | required, not blank, max. 80 characters |
 | `/api/documents/{id}` | `id` | must be a number |
 
@@ -101,13 +116,14 @@ request cannot be read at all (broken JSON, an id like `abc`). Nothing is saved 
 Fix the request and send it again; repeating the same request will always fail.
 
 `404` is returned when a document id or `categoryId` does not exist.
+`413` is returned when the uploaded file is larger than 10 MB.
 
 ### Example: invalid request
 
-Creating a document with an empty title and without `fileName`:
+Updating a document with an empty title and without `fileName`:
 
 ```bash
-curl -i -X POST http://localhost:8080/api/documents \
+curl -i -X PUT http://localhost:8080/api/documents/1 \
   -H 'Content-Type: application/json' \
   -d '{"title":"","contentType":"application/pdf"}'
 ```
@@ -154,7 +170,7 @@ returned instead (`"error": "Bad Request"`, no `validationErrors`).
 - Database login fails after the credentials were changed: the old volume still has the old
   ones. `docker compose down -v` deletes the volume (**all stored data is lost**).
 
-**`./mvnw: Permission denied`** (macOS/Linux): run `chmod +x mvnw` once.
+**`./mvnw: Permission denied`** (macOS/Linux): run `chmod +x paperless-rest/mvnw` once.
 
 ## Architecture
 

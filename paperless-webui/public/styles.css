@@ -1,0 +1,9 @@
+/* Layout and colours come from Bootstrap (vendor/bootstrap.min.css).
+   Only a few project-specific additions live here. */
+
+.file-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    font-size: .75rem;
+}
